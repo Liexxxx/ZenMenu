@@ -55,8 +55,12 @@ namespace ZenMenu.Menu
         {
             if (!ButtonSets.buttonSets_.TryGetValue(CurrentCategory, out var found)) return;
             var mods = found.Values.Skip(page * 6).Take(6).ToArray();
-            ButtonModule[] modules = new ButtonModule[6];
-            for (int i = 0; i < 6; i++) modules[i] = i < mods.Length ? mods[i] : deadModule;
+            ButtonModule[] modules = new ButtonModule[7];
+            modules[0] = deadModule;
+
+            for (int i = 0; i < 6; i++)
+                modules[i + 1] = i < mods.Length ? mods[i] : deadModule;
+
             InitButtons(modules);
             menu.SetActive(true);
             OpenedWithLeft = L;
@@ -90,6 +94,7 @@ namespace ZenMenu.Menu
         public static void ChangeCataory(string Catagory)
         {
             CurrentCategory = Catagory;
+            page = 0;
             InitMenu(OpenedWithLeft);
         }
         static void SetMenuRotationTowardCamera()
@@ -114,38 +119,91 @@ namespace ZenMenu.Menu
             SetupRef(reference);
             buttonCollider = reference.GetComponent<SphereCollider>();
             buttonCollider.isTrigger = true;
+            buttonCollider.radius = 0.05f;
             var rb = reference.AddComponent<Rigidbody>(); rb.isKinematic = true; rb.useGravity = false;
         }
 
-        public static void InitButtons(ButtonModule[] Module)
+        public static void InitButtons(ButtonModule[] modules)
         {
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < 7; i++)
             {
                 GameObject button = menu.GetNamedChild($"ModButton{i}");
                 if (!button) continue;
-                button.GetNamedChild("ModName").GetComponent<TextMeshPro>().text = Module[i].ModName;
-                button.layer = 2;
-                var bc = button.GetComponent<BoxCollider>();
-                if (!bc) bc = button.AddComponent<BoxCollider>();
+                button.GetNamedChild("ModName").GetComponent<TextMeshPro>().text = modules[i].ModName;
+                var bc = button.GetComponent<BoxCollider>() ?? button.AddComponent<BoxCollider>();
                 bc.isTrigger = true;
-                bc.size = button.transform.localScale;
-                var btn = button.GetComponent<ButtonCollider>();
-                if (!btn) btn = button.AddComponent<ButtonCollider>();
-                btn.Button = Module[i];
+                Renderer r = button.GetComponent<Renderer>();
+                if (r != null)
+                {
+                    Vector3 size = r.bounds.size;
+                    size.x /= button.transform.lossyScale.x;
+                    size.y /= button.transform.lossyScale.y;
+                    size.z /= button.transform.lossyScale.z;
+                    bc.size = new Vector3(size.x, size.y, Mathf.Max(size.z, 0.02f));
+                    bc.center = button.transform.InverseTransformPoint(r.bounds.center);
+                }
+                var btn = button.GetComponent<ButtonCollider>() ?? button.AddComponent<ButtonCollider>();
+                btn.Button = modules[i];
             }
-            if (!menu.GetNamedChild("NextPage").GetComponent<ButtonCollider>()) menu.GetNamedChild("NextPage").AddComponent<ButtonCollider>();
-            menu.GetNamedChild("NextPage").layer = 2;
-            if (!menu.GetNamedChild("PrevPage").GetComponent<ButtonCollider>()) menu.GetNamedChild("PrevPage").AddComponent<ButtonCollider>();
-            menu.GetNamedChild("PrevPage").layer = 2;
+            var next = menu.GetNamedChild("NextPage");
+            var prev = menu.GetNamedChild("PrevPage");
+
+            if (next)
+            {
+                var bc = next.GetComponent<BoxCollider>() ?? next.AddComponent<BoxCollider>();
+                bc.isTrigger = true;
+                Renderer r = next.GetComponent<Renderer>();
+                if (r != null)
+                {
+                    Vector3 size = r.bounds.size;
+                    size.x /= next.transform.lossyScale.x;
+                    size.y /= next.transform.lossyScale.y;
+                    size.z /= next.transform.lossyScale.z;
+                    bc.size = new Vector3(size.x, size.y, Mathf.Max(size.z, 0.02f));
+                    bc.center = next.transform.InverseTransformPoint(r.bounds.center);
+                }
+                var btn = next.GetComponent<ButtonCollider>() ?? next.AddComponent<ButtonCollider>();
+                btn.IsPageButton = true;
+                btn.IsPrevPage = false;
+            }
+
+            if (prev)
+            {
+                var bc = prev.GetComponent<BoxCollider>() ?? prev.AddComponent<BoxCollider>();
+                bc.isTrigger = true;
+                Renderer r = prev.GetComponent<Renderer>();
+                if (r != null)
+                {
+                    Vector3 size = r.bounds.size;
+                    size.x /= prev.transform.lossyScale.x;
+                    size.y /= prev.transform.lossyScale.y;
+                    size.z /= prev.transform.lossyScale.z;
+                    bc.size = new Vector3(size.x, size.y, Mathf.Max(size.z, 0.02f));
+                    bc.center = prev.transform.InverseTransformPoint(r.bounds.center);
+                }
+                var btn = prev.GetComponent<ButtonCollider>() ?? prev.AddComponent<ButtonCollider>();
+                btn.IsPageButton = true;
+                btn.IsPrevPage = true;
+            }
         }
 
-        public static void ToggleMod(ButtonModule Mod)
+        public static void ToggleMod(ButtonModule mod)
         {
-            if (Mod.Toggable && Mod.Method != null) { Mod.Enabled = !Mod.Enabled; try { Mod.Method.Invoke(); } catch { } }
-            else if (!Mod.Toggable) try { Mod.Method.Invoke(); } catch { }
+            if (mod.Toggable)
+            {
+                mod.Enabled = !mod.Enabled;
 
-            if (Mod.EnableMethod != null && Mod.Enabled) try { Mod.EnableMethod.Invoke(); } catch { }
-            if (Mod.DisableMethod != null && !Mod.Enabled) try { Mod.DisableMethod.Invoke(); } catch { }
+                if (mod.Enabled)
+                    mod.EnableMethod?.Invoke();
+                else
+                    mod.DisableMethod?.Invoke();
+            }
+            else
+            {
+                mod.Method?.Invoke();
+            }
+
+            InitMenu(OpenedWithLeft);
         }
 
         public static void ChangePage(bool prev)

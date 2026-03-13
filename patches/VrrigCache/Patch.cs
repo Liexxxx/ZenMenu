@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
-namespace ZenMenu_.patches.VrrigCache
+namespace ZenMenu.patches.VrrigCache
 {
     internal class Patch : MonoBehaviourPunCallbacks
     {

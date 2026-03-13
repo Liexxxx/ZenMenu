@@ -725,8 +725,4 @@
     </Reference>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="mods\" />
-  </ItemGroup>
-
 </Project>
