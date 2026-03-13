@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace ZenMenu.AssetBundling
 {
-    internal class Data
+    public class Data
     {
         public static GameObject ZenMenu;
         public static GameObject Notification;

@@ -36,8 +36,6 @@ namespace ZenMenu.Patches
                     PatchErrors++;
                 }
             }
-
-
             IsPatched = true;
         }
     }

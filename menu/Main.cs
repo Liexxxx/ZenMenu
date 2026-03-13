@@ -1,98 +1,86 @@
-﻿using GorillaLocomotion;
+﻿using BepInEx;
+using GorillaLocomotion;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using TMPro;
 using Unity.XR.CoreUtils;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using ZenMenu.AssetBundling;
 using ZenMenu.Utillities;
 
 namespace ZenMenu.Menu
 {
-    [HarmonyLib.HarmonyPatch(typeof(GorillaLocomotion.GTPlayer), "LateUpdate")]
-    public class Main
+    [HarmonyLib.HarmonyPatch(typeof(GTPlayer), "LateUpdate")]
+    public class Main : MonoBehaviour
     {
-        public void Prefix()
+        public static void Prefix()
         {
             try
             {
-                if (ControllerInputPoller.instance.rightControllerPrimaryButton || UnityEngine.Input.GetKeyDown(KeyCode.Q))
+                bool r = ControllerInputPoller.instance.rightControllerPrimaryButton;
+                bool l = ControllerInputPoller.instance.leftControllerPrimaryButton;
+                bool q = Keyboard.current[Key.Q].isPressed;
+
+                if (r || q)
                 {
+                    menu.SetActive(true);
                     InitMenu(false);
-                    CreateRefrance(false);
+                    if (!reference) CreateRefrance(false);
                     RecenterMenu();
                 }
-                else if (!ControllerInputPoller.instance.leftControllerPrimaryButton)
+                else if (l)
                 {
-                    CloseMenu();
-                }
-                if (ControllerInputPoller.instance.leftControllerPrimaryButton)
-                {
+                    menu.SetActive(true);
                     InitMenu(true);
-                    CreateRefrance(true);
+                    if (!reference) CreateRefrance(true);
                     RecenterMenu();
                 }
-                else if (!ControllerInputPoller.instance.rightControllerPrimaryButton && !UnityEngine.Input.GetKeyDown(KeyCode.Q))
-                {
-                    CloseMenu();
-                }
+                else CloseMenu();
             }
             catch { }
+
             try
             {
-                //Mod Runner
-                if (ButtonSets.buttonSets_.TryGetValue(CurrentCategory, out var foundDict))
-                {
-                    foreach (ButtonModule Modules in foundDict.Values)
+                if (ButtonSets.buttonSets_.TryGetValue(CurrentCategory, out var found))
+                    foreach (ButtonModule m in found.Values)
                     {
-                        if (Modules.Enabled && Modules.Toggable)
-                        {
-                            try { Modules.Method?.Invoke(); } catch { }
-                        }
-                        if (Modules.EnableMethod != null)
-                        {
-                            if (Modules.Enabled)
-                            {
-                                try { Modules.EnableMethod.Invoke(); } catch { }
-                            }
-                        }
+                        if (m.Enabled && m.Toggable) try { m.Method?.Invoke(); } catch { }
+                        if (m.EnableMethod != null && m.Enabled) try { m.EnableMethod.Invoke(); } catch { }
                     }
-                }
-            }catch { }
+            }
+            catch { }
         }
+
         public static void InitMenu(bool L)
         {
-            if (ButtonSets.buttonSets_.TryGetValue(CurrentCategory, out var foundDict))
-            {
-                var realModules = foundDict.Values.Take(5).ToArray();
-                ButtonModule[] modules = new ButtonModule[6];
-                modules[0] = deadModule;
-                for (int i = 0; i < realModules.Length; i++)
-                {
-                    modules[i + 1] = realModules[i];
-                }
-                InitButtons(modules);
-            }
+            if (!ButtonSets.buttonSets_.TryGetValue(CurrentCategory, out var found)) return;
+
+            var mods = found.Values.Skip(page * 6).Take(6).ToArray();
+            ButtonModule[] modules = new ButtonModule[6];
+
+            for (int i = 0; i < 6; i++) modules[i] = i < mods.Length ? mods[i] : deadModule;
+
+            InitButtons(modules);
+            menu.SetActive(true);
         }
+
         public static void CloseMenu()
         {
             menu.SetActive(false);
-            GameObject.Destroy(reference);
+            if (reference) GameObject.Destroy(reference);
+            reference = null;
             buttonCollider = null;
             HasSetPostion = false;
         }
+
         public static void RecenterMenu()
         {
             Transform cam = Camera.main.transform;
-            if (cam == null) return;
             if (!HasSetPostion)
             {
-                menu.transform.position = cam.position + cam.forward * 1.0f + cam.up * 0.0f;
-                menu.transform.rotation = Quaternion.LookRotation(menu.transform.position - cam.position, cam.up);
+                menu.transform.position = cam.position + cam.forward * 1f;
+                menu.transform.rotation = Quaternion.LookRotation(cam.position - menu.transform.position, cam.up);
                 HasSetPostion = true;
                 lockedPosition = menu.transform.position;
             }
@@ -102,77 +90,89 @@ namespace ZenMenu.Menu
                 SetMenuRotationTowardCamera();
             }
         }
+
         static void SetMenuRotationTowardCamera()
         {
-            if (menu == null || Camera.main == null) return;
             Vector3 camPos = Camera.main.transform.position;
             Vector3 toCam = camPos - menu.transform.position;
             toCam.y = 0f;
-            if (toCam.sqrMagnitude > 0.0001f)
-                menu.transform.rotation = Quaternion.LookRotation(-toCam, Vector3.up);
+            if (toCam.sqrMagnitude > 0.0001f) menu.transform.rotation = Quaternion.LookRotation(toCam, Vector3.up);
         }
+
         static void SetupRef(GameObject r)
         {
-            r.GetComponent<Renderer>().material.color = Data.ZenMenu.transform.GetChild(0).gameObject.GetComponent<Renderer>().material.color;
+            r.GetComponent<Renderer>().material.color = Data.ZenMenu.transform.GetChild(0).GetComponent<Renderer>().material.color;
             r.transform.localPosition = new Vector3(0f, -0.1f, 0f);
             r.transform.localScale = new Vector3(0.025f, 0.025f, 0.025f);
         }
-        void CreateRefrance(bool L)
+
+        static void CreateRefrance(bool L)
         {
             reference = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             reference.transform.parent = L ? GorillaTagger.Instance.leftHandTransform : GorillaTagger.Instance.rightHandTransform;
             SetupRef(reference);
             buttonCollider = reference.GetComponent<SphereCollider>();
             buttonCollider.isTrigger = true;
-            var rb1 = reference.AddComponent<Rigidbody>(); rb1.isKinematic = true; rb1.useGravity = false;
+            var rb = reference.AddComponent<Rigidbody>(); rb.isKinematic = true; rb.useGravity = false;
         }
+
         public static void InitButtons(ButtonModule[] Module)
         {
             for (int i = 0; i < 6; i++)
             {
                 GameObject button = menu.GetNamedChild($"ModButton{i}");
-                if (button == null) { }
-                else
-                {
-                    button.GetNamedChild("ModName").GetComponent<TextMeshPro>().text = Module[i].ModName;
-                    GameObject.Destroy(button.GetComponent<BoxCollider>());
-                    GameObject.Destroy(button.GetComponent<Rigidbody>());
-                    button.AddComponent<BoxCollider>();
-                    var collider = button.GetComponent<BoxCollider>();
-                    collider.isTrigger = true;
-                    collider.size = button.transform.localScale;
-                    button.AddComponent<ButtonCollider>().Button = Module[i];
-                }
+                if (!button) continue;
+
+                button.GetNamedChild("ModName").GetComponent<TextMeshPro>().text = Module[i].ModName;
+
+                var bc = button.GetComponent<BoxCollider>();
+                if (!bc) bc = button.AddComponent<BoxCollider>();
+                bc.isTrigger = true;
+                bc.size = button.transform.localScale;
+
+                var btn = button.GetComponent<ButtonCollider>();
+                if (!btn) btn = button.AddComponent<ButtonCollider>();
+                btn.Button = Module[i];
             }
-            menu.GetNamedChild("NextPage").AddComponent<ButtonCollider>();
-            menu.GetNamedChild("PrevPage").AddComponent<ButtonCollider>();
+
+            if (!menu.GetNamedChild("NextPage").GetComponent<ButtonCollider>()) menu.GetNamedChild("NextPage").AddComponent<ButtonCollider>();
+            if (!menu.GetNamedChild("PrevPage").GetComponent<ButtonCollider>()) menu.GetNamedChild("PrevPage").AddComponent<ButtonCollider>();
         }
+
         public static void ToggleMod(ButtonModule Mod)
         {
-            if (Mod.Toggable && Mod.Method != null)
-            {
-                Mod.Enabled = !Mod.Enabled;
-                try { Mod.Method.Invoke(); } catch { }
-            }
-            else if (!Mod.Toggable)
-            {
-                try { Mod.Method.Invoke(); } catch { }
-            }
+            if (Mod.Toggable && Mod.Method != null) { Mod.Enabled = !Mod.Enabled; try { Mod.Method.Invoke(); } catch { } }
+            else if (!Mod.Toggable) try { Mod.Method.Invoke(); } catch { }
+
             if (Mod.EnableMethod != null && Mod.Enabled) try { Mod.EnableMethod.Invoke(); } catch { }
             if (Mod.DisableMethod != null && !Mod.Enabled) try { Mod.DisableMethod.Invoke(); } catch { }
         }
+
         public static void ChangePage(bool prev)
         {
+            if (!ButtonSets.buttonSets_.TryGetValue(CurrentCategory, out var found)) return;
 
+            int maxPage = Mathf.CeilToInt(found.Count / 6f) - 1;
+
+            if (prev) page--;
+            else page++;
+
+            if (page < 0) page = maxPage;
+            if (page > maxPage) page = 0;
+
+            InitMenu(false);
         }
+
         public static GameObject reference;
         public static SphereCollider buttonCollider;
-        public static GameObject menu = Data.ZenMenu;
+        public static GameObject menu => Data.ZenMenu;
 
         static bool HasSetPostion = false;
         static Vector3 lockedPosition;
 
-        public static string CurrentCategory;
+        public static string CurrentCategory= "Main";
+        static int page;
+
         static ButtonModule deadModule = new ButtonModule(
             "Empty",
             "Placeholder",

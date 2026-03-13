@@ -1,8 +1,4 @@
 ﻿using BepInEx;
-using GorillaExtensions;
-using System;
-using System.IO;
-using System.Reflection;
 using TMPro;
 using UnityEngine;
 
@@ -13,23 +9,19 @@ namespace ZenMenu.AssetBundling
     {
         void Awake()
         {
-            StartCoroutine(LoadAssets());
-        }
-
-        public System.Collections.IEnumerator LoadAssets()
-        {
             string[] resources = new string[]
             {
-                "ZenMenu.Resources.ZenMenu_Prefab",
-                "ZenMenu.Resources.Notification_Prefab"
+                "ZenMenu_.Resources.ZenMenu_Prefab",
+                "ZenMenu_.Resources.Notification_Prefab"
             };
+
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+
             for (int i = 0; i < resources.Length; i++)
             {
                 string resourceName = resources[i];
                 System.IO.Stream stream = assembly.GetManifestResourceStream(resourceName);
-                if (stream == null)
-                    continue;
+                if (stream == null) continue;
                 try
                 {
                     System.IO.MemoryStream ms = new System.IO.MemoryStream();
@@ -37,26 +29,32 @@ namespace ZenMenu.AssetBundling
                     byte[] bundleBytes = ms.ToArray();
                     ms.Dispose();
                     UnityEngine.AssetBundle bundle = UnityEngine.AssetBundle.LoadFromMemory(bundleBytes);
+                    if (bundle == null) continue;
                     UnityEngine.GameObject prefab = bundle.LoadAllAssets<UnityEngine.GameObject>()[0];
+                    if (prefab == null) continue;
                     if (resourceName.Contains("ZenMenu_Prefab"))
-                        Data.ZenMenu = UnityEngine.Object.Instantiate<UnityEngine.GameObject>(prefab);
-                    else
-                        Data.Notification = UnityEngine.Object.Instantiate<UnityEngine.GameObject>(prefab);
-                }
-                finally
-                {
-                    stream.Dispose();
-                    if (Data.ZenMenu.IsNotNull())
                     {
-                        Data.ZenMenu.GetComponentInChildren<MeshRenderer>().material.shader = Shader.Find("GorillaTag/UberShader");
-                        Data.ZenMenu.GetComponentInChildren<TextMeshPro>().gameObject.GetComponent<MeshRenderer>().material.shader = Shader.Find("TextMeshPro/Mobile/BitmapCustomSATOutline");
-                        Data.Notification.GetComponentInChildren<MeshRenderer>().material.shader = Shader.Find("GorillaTag/UberShader");
-                        Data.Notification.GetComponentInChildren<TextMeshPro>().gameObject.GetComponent<MeshRenderer>().material.shader = Shader.Find("TextMeshPro/Mobile/BitmapCustomSATOutline");
+                        Data.ZenMenu = UnityEngine.Object.Instantiate(prefab);
+                        Data.ZenMenu.hideFlags = HideFlags.HideAndDontSave;
+                    }
+                    else
+                    {
+                        Data.Notification = UnityEngine.Object.Instantiate(prefab);
+                        Data.Notification.hideFlags = HideFlags.HideAndDontSave;
                     }
                 }
+                catch { }
+                finally { stream.Dispose(); }
             }
 
-            yield break;
+            try
+            {
+                Data.ZenMenu.GetComponentInChildren<MeshRenderer>(true).material.shader = Shader.Find("GorillaTag/UberShader");
+                Data.ZenMenu.GetComponentInChildren<TextMeshPro>(true).gameObject.GetComponent<MeshRenderer>().material.shader = Shader.Find("TextMeshPro/Mobile/BitmapCustomSATOutline");
+                Data.Notification.GetComponentInChildren<MeshRenderer>(true).material.shader = Shader.Find("GorillaTag/UberShader");
+                Data.Notification.GetComponentInChildren<TextMeshPro>(true).gameObject.GetComponent<MeshRenderer>().material.shader = Shader.Find("TextMeshPro/Mobile/BitmapCustomSATOutline");
+            }
+            catch { }
         }
     }
 }
