@@ -20,9 +20,8 @@ namespace ZenMenu.Menu
             {
                 bool r = ControllerInputPoller.instance.rightControllerPrimaryButton;
                 bool l = ControllerInputPoller.instance.leftControllerPrimaryButton;
-                bool q = Keyboard.current[Key.Q].isPressed;
 
-                if (r || q)
+                if (r || Keyboard.current[Key.Q].isPressed)
                 {
                     menu.SetActive(true);
                     InitMenu(false);
@@ -55,14 +54,12 @@ namespace ZenMenu.Menu
         public static void InitMenu(bool L)
         {
             if (!ButtonSets.buttonSets_.TryGetValue(CurrentCategory, out var found)) return;
-
             var mods = found.Values.Skip(page * 6).Take(6).ToArray();
             ButtonModule[] modules = new ButtonModule[6];
-
             for (int i = 0; i < 6; i++) modules[i] = i < mods.Length ? mods[i] : deadModule;
-
             InitButtons(modules);
             menu.SetActive(true);
+            OpenedWithLeft = L;
         }
 
         public static void CloseMenu()
@@ -72,8 +69,8 @@ namespace ZenMenu.Menu
             reference = null;
             buttonCollider = null;
             HasSetPostion = false;
+            OpenedWithLeft = false;
         }
-
         public static void RecenterMenu()
         {
             Transform cam = Camera.main.transform;
@@ -90,7 +87,11 @@ namespace ZenMenu.Menu
                 SetMenuRotationTowardCamera();
             }
         }
-
+        public static void ChangeCataory(string Catagory)
+        {
+            CurrentCategory = Catagory;
+            InitMenu(OpenedWithLeft);
+        }
         static void SetMenuRotationTowardCamera()
         {
             Vector3 camPos = Camera.main.transform.position;
@@ -122,21 +123,20 @@ namespace ZenMenu.Menu
             {
                 GameObject button = menu.GetNamedChild($"ModButton{i}");
                 if (!button) continue;
-
                 button.GetNamedChild("ModName").GetComponent<TextMeshPro>().text = Module[i].ModName;
-
+                button.layer = 2;
                 var bc = button.GetComponent<BoxCollider>();
                 if (!bc) bc = button.AddComponent<BoxCollider>();
                 bc.isTrigger = true;
                 bc.size = button.transform.localScale;
-
                 var btn = button.GetComponent<ButtonCollider>();
                 if (!btn) btn = button.AddComponent<ButtonCollider>();
                 btn.Button = Module[i];
             }
-
             if (!menu.GetNamedChild("NextPage").GetComponent<ButtonCollider>()) menu.GetNamedChild("NextPage").AddComponent<ButtonCollider>();
+            menu.GetNamedChild("NextPage").layer = 2;
             if (!menu.GetNamedChild("PrevPage").GetComponent<ButtonCollider>()) menu.GetNamedChild("PrevPage").AddComponent<ButtonCollider>();
+            menu.GetNamedChild("PrevPage").layer = 2;
         }
 
         public static void ToggleMod(ButtonModule Mod)
@@ -151,17 +151,14 @@ namespace ZenMenu.Menu
         public static void ChangePage(bool prev)
         {
             if (!ButtonSets.buttonSets_.TryGetValue(CurrentCategory, out var found)) return;
-
             int maxPage = Mathf.CeilToInt(found.Count / 6f) - 1;
-
             if (prev) page--;
             else page++;
-
             if (page < 0) page = maxPage;
             if (page > maxPage) page = 0;
-
-            InitMenu(false);
+            InitMenu(OpenedWithLeft);
         }
+        static bool OpenedWithLeft;
 
         public static GameObject reference;
         public static SphereCollider buttonCollider;

@@ -16,12 +16,12 @@ namespace ZenMenu.Menu
             "Main",
             new Dictionary<string, ButtonModule>()
             {
-                { "Safety", new ButtonModule("Safety","Place Holder",false,false,Method_:null,Catagory_:"Safety") },
-                { "Room", new ButtonModule("Room","Place Holder",false,false,Method_:null,Catagory_:"Safety") },
-                { "Vrrig", new ButtonModule("Vrrig","Place Holder",false,false,Method_ : null, Catagory_:"Safety") },
-                { "Movement", new ButtonModule("Movement","Place Holder",false,false,Method_ : null, Catagory_:"Safety") },
-                { "Advantage", new ButtonModule("Advantage","Place Holder",false,false,Method_ : null, Catagory_:"Safety") },
-                { "Visuals", new ButtonModule("Visuals","Place Holder",false,false,Method_ : null, Catagory_:"Safety") }
+                { "Safety", new ButtonModule("Safety","Place Holder",false,false,Method_:()=>Main.ChangeCataory("Safety"),Catagory_:"Safety") },
+                { "Room", new ButtonModule("Room","Place Holder",false,false,Method_:()=>Main.ChangeCataory("Room"),Catagory_:"Safety") },
+                { "Vrrig", new ButtonModule("Vrrig","Place Holder",false,false,Method_ :()=>Main.ChangeCataory("Vrrig"), Catagory_:"Safety") },
+                { "Movement", new ButtonModule("Movement","Place Holder",false,false,Method_ :()=>Main.ChangeCataory("Movement"), Catagory_:"Safety") },
+                { "Advantage", new ButtonModule("Advantage","Place Holder",false,false,Method_ : ()=>Main.ChangeCataory("Advantage"), Catagory_:"Safety") },
+                { "Visuals", new ButtonModule("Visuals","Place Holder",false,false,Method_ : ()=>Main.ChangeCataory("Visuals"), Catagory_:"Safety") }
             }
         },
         {

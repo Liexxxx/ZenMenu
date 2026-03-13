@@ -50,6 +50,7 @@ namespace ZenMenu.AssetBundling
             try
             {
                 Data.ZenMenu.GetComponentInChildren<MeshRenderer>(true).material.shader = Shader.Find("GorillaTag/UberShader");
+                GameObject.Destroy(Data.ZenMenu.GetComponentInChildren<BoxCollider>(true));
                 Data.ZenMenu.GetComponentInChildren<TextMeshPro>(true).gameObject.GetComponent<MeshRenderer>().material.shader = Shader.Find("TextMeshPro/Mobile/BitmapCustomSATOutline");
                 Data.Notification.GetComponentInChildren<MeshRenderer>(true).material.shader = Shader.Find("GorillaTag/UberShader");
                 Data.Notification.GetComponentInChildren<TextMeshPro>(true).gameObject.GetComponent<MeshRenderer>().material.shader = Shader.Find("TextMeshPro/Mobile/BitmapCustomSATOutline");
