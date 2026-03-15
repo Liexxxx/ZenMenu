@@ -15,7 +15,8 @@ namespace ZenMenu.patches.VrrigCache
 
         public static void InitCache()
         {
-            GameObject = new GameObject("VrrigCache_Zen").AddComponent<Patch>().gameObject;
+            GameObject = new GameObject("VrrigCache_Zen");
+            GameObject.AddComponent<Patch>();
         }
         private IEnumerator FetchRigsDelayed()
         {

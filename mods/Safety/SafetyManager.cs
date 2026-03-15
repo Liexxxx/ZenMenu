@@ -1,4 +1,4 @@
-﻿using BepInEx;
+using BepInEx;
 using ExitGames.Client.Photon;
 using ExitGames.Client.Photon.StructWrapping;
 using Fusion;
@@ -19,6 +19,7 @@ using ZenMenu.Utillities.MotherShip.V1;
 
 namespace ZenMenu.mods.Safety
 {
+    [BepInPlugin("org.zen.safety","safetymanager","0.0.0")]
     internal class SafetyManager : BaseUnityPlugin
     {
 
@@ -139,13 +140,13 @@ namespace ZenMenu.mods.Safety
                     break;
             }
         }
-        public static bool InitManager()
+        public static void InitManager()
         {
-            if (!GameObject.Find("SafetyModManager(@Liex)"))
-                gameobject = new GameObject("SafetyModManager(@Liex)").AddComponent<SafetyManager>().gameObject;
-            else
-                return true;
-            return false;
+            if (GameObject.Find("SafetyModManager(@Liex)") == null)
+            {
+                GameObject obj = new GameObject("SafetyModManager(@Liex)");
+                obj.AddComponent<SafetyManager>();
+            }
         }
 
         GameObject Zone;
@@ -163,7 +164,6 @@ namespace ZenMenu.mods.Safety
                 {
                     if (PhotonNetwork.IsMasterClient)
                     {
-                        // 
                         PhotonNetwork.NetworkingClient.LoadBalancingPeer.OpRaiseEvent(200, "JOIN", new Photon.Realtime.RaiseEventOptions
                         {
                             SequenceChannel = 0,
@@ -230,8 +230,14 @@ namespace ZenMenu.mods.Safety
                             if (!PhotonNetwork.IsConnected)
                             { GameObject.Destroy(Zone); Zone = null; }
                             foreach (var p in patches.VrrigCache.Data.vrrigs)
-                                if (Vector3.Distance(p.rightHandTransform.position, Zone.transform.position) >= 0.45f || Vector3.Distance(p.leftHandTransform.position, Zone.transform.position) >= 0.45f)
+                            {
+                                if (Vector3.Distance(p.rightHandTransform.position, Zone.transform.position) <= 0.45f ||
+                                    Vector3.Distance(p.leftHandTransform.position, Zone.transform.position) <= 0.45f)
+                                {
                                     PhotonNetwork.Disconnect();
+                                    break;
+                                }
+                            }
                         }
                     }
                 }

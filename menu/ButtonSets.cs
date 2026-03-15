@@ -1,4 +1,5 @@
-﻿using System;
+using JetBrains.Annotations;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -90,17 +91,29 @@ namespace ZenMenu.Menu
 
         public bool IsPageButton;
         public bool IsPrevPage;
+        public bool IsHome;
+        public float Cooldown = 0.15f;
         float lastPress;
         public void OnTriggerEnter(Collider collider)
         {
-            if (collider != Main.buttonCollider) return;
+            if (collider != Main.buttonCollider && collider != Main.buttonCollider2) return;
+            if (Time.time - lastPress < Cooldown) return;
+            lastPress = Time.time;
             if (IsPageButton)
             {
                 Main.ChangePage(IsPrevPage);
+                GorillaTagger.Instance.StartVibration(Main.OpenedWithLeft, 5f, 1f);
+                return;
+            }
+            if (IsHome)
+            {
+                Main.ReturnHome();
+                GorillaTagger.Instance.StartVibration(Main.OpenedWithLeft, 5f, 1f);
                 return;
             }
             if (Button != null)
                 Main.ToggleMod(Button);
+            GorillaTagger.Instance.StartVibration(Main.OpenedWithLeft, 5f, 1f);
         }
     }
 }

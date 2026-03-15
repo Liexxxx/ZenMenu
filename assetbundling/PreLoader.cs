@@ -1,6 +1,8 @@
-﻿using BepInEx;
+using BepInEx;
+using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace ZenMenu.AssetBundling
 {
@@ -49,15 +51,64 @@ namespace ZenMenu.AssetBundling
 
             try
             {
-                Data.ZenMenu.GetComponentInChildren<MeshRenderer>(true).material.shader = Shader.Find("GorillaTag/UberShader");
-                GameObject.Destroy(Data.ZenMenu.GetComponent<Collider>());
-                GameObject.Destroy(Data.ZenMenu.GetComponentInChildren<BoxCollider>(true));
-                GameObject.Destroy(Data.ZenMenu.GetComponentInChildren<Collider>(true));
-                Data.ZenMenu.GetComponentInChildren<TextMeshPro>(true).gameObject.GetComponent<MeshRenderer>().material.shader = Shader.Find("TextMeshPro/Mobile/BitmapCustomSATOutline");
-                Data.Notification.GetComponentInChildren<MeshRenderer>(true).material.shader = Shader.Find("GorillaTag/UberShader");
-                Data.Notification.GetComponentInChildren<TextMeshPro>(true).gameObject.GetComponent<MeshRenderer>().material.shader = Shader.Find("TextMeshPro/Mobile/BitmapCustomSATOutline");
+                var gtShader = UnityEngine.Shader.Find("GorillaTag/UberShader");
+                foreach (UnityEngine.MeshRenderer mr in Data.ZenMenu.GetComponentsInChildren<UnityEngine.MeshRenderer>(true))
+                {
+                    if (mr.GetComponent<TMPro.TextMeshPro>() != null) continue;
+                    if (gtShader != null) mr.material.shader = gtShader;
+                }
+                UnityEngine.GameObject.Destroy(Data.ZenMenu.GetComponent<UnityEngine.Collider>());
+                Data.ZenMenu.GetComponentsInChildren<UnityEngine.BoxCollider>(true)
+                    .Where(c => !c.gameObject.name.ToLower().Contains("prev")
+                             && !c.gameObject.name.ToLower().Contains("next")
+                             && !c.gameObject.name.ToLower().Contains("mod"))
+                    .ToList()
+                    .ForEach(c => UnityEngine.GameObject.Destroy(c));
+
+                Data.ZenMenu.GetComponentsInChildren<UnityEngine.Collider>(true)
+                    .Where(c => !c.gameObject.name.ToLower().Contains("prev")
+                             && !c.gameObject.name.ToLower().Contains("next")
+                             && !c.gameObject.name.ToLower().Contains("mod"))
+                    .ToList()
+                    .ForEach(c => UnityEngine.GameObject.Destroy(c));
+                foreach (UnityEngine.MeshRenderer mr in Data.Notification.GetComponentsInChildren<UnityEngine.MeshRenderer>(true))
+                {
+                    if (mr.GetComponent<TMPro.TextMeshPro>() != null) continue;
+                    if (gtShader != null) mr.material.shader = gtShader;
+                }
+                FixTMPForBothEyes(Data.ZenMenu);
+                FixTMPForBothEyes(Data.Notification);
             }
             catch { }
+        }
+
+        static void FixTMPForBothEyes(GameObject root)
+        {
+            if (root == null) return;
+            foreach (var tm in root.GetComponentsInChildren<TMPro.TextMeshPro>(true))
+            {
+                var meshRenderer = tm.GetComponent<MeshRenderer>();
+                if (meshRenderer == null) continue;
+                meshRenderer.enabled = true;
+                meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
+                meshRenderer.receiveShadows = false;
+                meshRenderer.motionVectorGenerationMode = MotionVectorGenerationMode.ForceNoMotion;
+                for (int i = 0; i < meshRenderer.materials.Length; i++)
+                {
+                    var m = meshRenderer.materials[i];
+                    if (m != null)
+                    {
+                        m.enableInstancing = false;
+                        m.SetOverrideTag("DisableBatching", "True");
+                    }
+                }
+                if (tm.fontMaterial != null)
+                {
+                    tm.fontMaterial.enableInstancing = false;
+                    tm.fontMaterial.SetOverrideTag("DisableBatching", "True");
+                }
+                tm.gameObject.layer = 0;
+            }
         }
     }
 }
