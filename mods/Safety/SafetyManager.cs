@@ -3,6 +3,7 @@ using ExitGames.Client.Photon;
 using ExitGames.Client.Photon.StructWrapping;
 using Fusion;
 using GorillaNetworking;
+using HarmonyLib;
 using Modio.Mods;
 using Photon.Pun;
 using Photon.Realtime;
@@ -15,6 +16,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
+using ZenMenu.Menu;
 using ZenMenu.Utillities.MotherShip.V1;
 
 namespace ZenMenu.mods.Safety
@@ -41,6 +43,7 @@ namespace ZenMenu.mods.Safety
             FlushCache,
             FlushRPCS,
             CleanTracesOnGameClose,
+            RpcProtection
         }
         public static void EnableMod(Mods mod)
         {
@@ -138,6 +141,9 @@ namespace ZenMenu.mods.Safety
                 case Mods.CleanTracesOnGameClose:
                     CleanTraces = !CleanTraces;
                     break;
+                case Mods.RpcProtection:
+                    RpcProtection = !RpcProtection;
+                    break;
             }
         }
         public static void InitManager()
@@ -148,14 +154,18 @@ namespace ZenMenu.mods.Safety
                 obj.AddComponent<SafetyManager>();
             }
         }
-
-        GameObject Zone;
+        public static GameObject zone;
+        public static bool SentReport;
+        public static bool zoneInitialized = false;
 
         static bool AntiBan_Mock;
         static bool AntiBan_Motheership;
         static bool AntiReport;
         static bool AntiModerator;
         static bool CleanTraces;
+        static bool RpcProtection;
+        float col = 0f;
+        bool NeededManualRPCProt;
         void Update()
         {
             if (AntiBan_Mock)
@@ -215,35 +225,91 @@ namespace ZenMenu.mods.Safety
             }
             if (AntiReport)
             {
-                foreach (GorillaPlayerScoreboardLine lines in GorillaScoreboardTotalUpdater.allScoreboardLines)
+                foreach (var sb in GorillaScoreboardTotalUpdater.allScoreboardLines)
                 {
-                    if (lines.linePlayer == VRRig.LocalRig.Creator)
+                    if (sb.linePlayer != GorillaTagger.Instance.offlineVRRig.Creator)
+                        continue;
+                    if (!zoneInitialized)
                     {
-                        if (Zone == null)
+                        zone = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        zone.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+                        UnityEngine.Object.Destroy(zone.GetComponent<Collider>());
+                        zone.GetComponent<Renderer>().enabled = false;
+                        zoneInitialized = true;
+                    }
+                    zone.transform.position = sb.reportButton.transform.position;
+                    bool reportTriggered = false;
+                    foreach (VRRig player in patches.VrrigCache.Data.vrrigs)
+                    {
+                        if (player == VRRig.LocalRig)
+                            continue;
+                        float distLeft = Vector3.Distance(player.leftHandTransform.position, zone.transform.position);
+                        float distRight = Vector3.Distance(player.rightHandTransform.position, zone.transform.position);
+                        if (distLeft < 0.45f || distRight < 0.45f)
                         {
-                            Zone = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                            Zone.transform.position = lines.reportButton.transform.position;
-                            Zone.transform.localScale = new Vector3(.5f, .5f, .5f);
-                        }
-                        else
-                        {
-                            if (!PhotonNetwork.IsConnected)
-                            { GameObject.Destroy(Zone); Zone = null; }
-                            foreach (var p in patches.VrrigCache.Data.vrrigs)
+                            if (!SentReport)
                             {
-                                if (Vector3.Distance(p.rightHandTransform.position, Zone.transform.position) <= 0.45f ||
-                                    Vector3.Distance(p.leftHandTransform.position, Zone.transform.position) <= 0.45f)
+                                PhotonNetwork.Disconnect();
+                                if (!Main.GetModule("Safety", "RPCProtection").Enabled)
                                 {
-                                    PhotonNetwork.Disconnect();
-                                    break;
+                                    EnableMod(Mods.RpcProtection);
+                                    NeededManualRPCProt = true;
                                 }
+                                player.transform.position = Vector3.negativeInfinity;
+                                SentReport = true;
+                                reportTriggered = true;
                             }
+                            break;
                         }
                     }
+
+                    if (SentReport && !PhotonNetwork.IsConnected)
+                    {
+                        SentReport = false;
+                        if (zone != null)
+                        {
+                            UnityEngine.Object.Destroy(zone);
+                            zone = null;
+                            zoneInitialized = false;
+                        }
+                    }
+
+                    if (reportTriggered)
+                        break;
                 }
             }
+            else { zone = null; if (NeededManualRPCProt)EnableMod(Mods.RpcProtection); }
+            if (RpcProtection)
+            {
+                MonkeAgent.instance.rpcErrorMax = int.MaxValue;
+                MonkeAgent.instance.rpcCallLimit = int.MaxValue;
+                MonkeAgent.instance.logErrorMax = int.MaxValue;
+                PhotonNetwork.MaxResendsBeforeDisconnect = int.MaxValue;
+                PhotonNetwork.QuickResends = int.MaxValue;
+                if (Time.time <= col) return;
+                col = Time.time + 0.47f;
+                try
+                {
+                    MonkeAgent.instance.OnPlayerLeftRoom(PhotonNetwork.LocalPlayer);
+                    PhotonNetwork.NetworkingClient.LoadBalancingPeer.SendOutgoingCommands();
+                    Traverse.Create(typeof(PhotonNetwork)).Property("ResentReliableCommands").SetValue(0);
+                    PhotonNetwork.NetworkingClient.Service();
+                    PhotonNetwork.NetworkingClient.OpChangeGroups(null, new byte[] { 1, 2, 3, 4 });
+                    PhotonNetwork.NetworkingClient.LoadBalancingPeer.TrafficStatsReset();
+                    var sys = AppDomain.CurrentDomain.GetAssemblies().First(a => a.GetName().Name == "Assembly-CSharp").GetType("RoomSystem")?.GetMethod("OnPlayerLeftRoom", BindingFlags.NonPublic | BindingFlags.Instance);
+                    sys?.Invoke(null, new object[] { NetworkSystem.Instance.LocalPlayer });
+                    new NetSystemState().Equals(NetSystemState.Connecting);
+                    new PeerStateValue().Equals(PeerStateValue.Connected);
+                    typeof(PhotonNetwork).GetMethod("RunViewUpdate", BindingFlags.NonPublic | BindingFlags.Static)?.Invoke(null, null);
+                    PhotonNetwork.SendAllOutgoingCommands();
+                }
+                catch { }
+                typeof(MonkeAgent)
+                    .GetMethod("RefreshRPCs", BindingFlags.NonPublic | BindingFlags.Instance)
+                    ?.Invoke(MonkeAgent.instance, null);
+            }
             else
-                Zone = null;
+                col = 0f;
             if (AntiModerator)
             {
                 if (patches.VrrigCache.Data.Modertors.Count > 0)

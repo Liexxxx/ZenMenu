@@ -51,7 +51,14 @@ namespace ZenMenu.Menu
             }
             catch { }
         }
-
+        public static ButtonModule GetModule(string Catagroy,string ModName)
+        {
+            if (ButtonSets.buttonSets_.TryGetValue(CurrentCategory, out var found))
+                foreach (ButtonModule m in found.Values)
+                    if (m.ModName == ModName)
+                        return m;
+            return null;
+        }
         public static void InitMenu(bool L)
         {
             if (!ButtonSets.buttonSets_.TryGetValue(CurrentCategory, out var found)) return;

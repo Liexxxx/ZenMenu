@@ -6,5 +6,6 @@ namespace ZenMenu_.mods.Safety
 {
     internal class Data
     {
+
     }
 }

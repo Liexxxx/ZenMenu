@@ -61,14 +61,14 @@ namespace ZenMenu.AssetBundling
                 Data.ZenMenu.GetComponentsInChildren<UnityEngine.BoxCollider>(true)
                     .Where(c => !c.gameObject.name.ToLower().Contains("prev")
                              && !c.gameObject.name.ToLower().Contains("next")
-                             && !c.gameObject.name.ToLower().Contains("mod"))
+                             && !c.gameObject.name.ToLower().Contains("mod") && !c.gameObject.name.ToLower().Contains("home"))
                     .ToList()
                     .ForEach(c => UnityEngine.GameObject.Destroy(c));
 
                 Data.ZenMenu.GetComponentsInChildren<UnityEngine.Collider>(true)
                     .Where(c => !c.gameObject.name.ToLower().Contains("prev")
                              && !c.gameObject.name.ToLower().Contains("next")
-                             && !c.gameObject.name.ToLower().Contains("mod"))
+                             && !c.gameObject.name.ToLower().Contains("mod") && !c.gameObject.name.ToLower().Contains("home"))
                     .ToList()
                     .ForEach(c => UnityEngine.GameObject.Destroy(c));
                 foreach (UnityEngine.MeshRenderer mr in Data.Notification.GetComponentsInChildren<UnityEngine.MeshRenderer>(true))

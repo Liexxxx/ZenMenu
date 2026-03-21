@@ -102,6 +102,6 @@ namespace ZenMenu.patches.VrrigCache
     [BepInEx.BepInPlugin("org.zen.VrrigCache","RigCaching","1.0.0")]
     public class Plugin : BaseUnityPlugin
     {
-        void Awake() => Patch.InitCache();
+        void Awake() { Patch.InitCache(); }
     }
 }

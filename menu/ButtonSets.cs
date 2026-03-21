@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using ZenMenu.mods.Safety;
 using ZenMenu.Utillities;
+using ZenMenu_.mods.Room;
 
 namespace ZenMenu.Menu
 {
@@ -41,14 +42,21 @@ namespace ZenMenu.Menu
                 { "FlushCache", new ButtonModule("FlushCache","Flushes The Local Cache",false,false,Method_:()=> SafetyManager.EnableMod(SafetyManager.Mods.FlushPlayerCredentials),Catagory_:"Safety") },
                 { "FlushRPCS", new ButtonModule("FlushRPCS","Flushes The Local RPC Traces",false,false,Method_:()=> SafetyManager.EnableMod(SafetyManager.Mods.FlushRPCS),Catagory_:"Safety") },
                 { "ClearCacheOnGameQuit", new ButtonModule("RemoveQuitTraces","Clears Cache | Traces (RPC) on game quitting",true,false,EM:()=> SafetyManager.EnableMod(SafetyManager.Mods.AntiCrash), DM:()=>SafetyManager.EnableMod(SafetyManager.Mods.AntiCrash),Catagory_:"Safety") },
+                { "RPCProtection", new ButtonModule("RPCProtection","Protection from any rpc lethal to an modder",true,false,EM:()=> SafetyManager.EnableMod(SafetyManager.Mods.RpcProtection), DM:()=>SafetyManager.EnableMod(SafetyManager.Mods.RpcProtection),Catagory_:"Safety") },
             }
         },
         {
             "Room",
             new Dictionary<string, ButtonModule>()
             {
-                { "PlaceHolder1", new ButtonModule("Place Holder","Place Holder",false,false,Catagory_:"Room") },
-                { "PlaceHolder2", new ButtonModule("Place Holder","Place Holder",false,false,Catagory_:"Room") },
+                { "Disconnect", new ButtonModule("Disconnect","Leaves the current room",false,false,Method_:()=> RoomManager.EnableMod(RoomManager.Mods.Disconnect),Catagory_:"Room") },
+                { "Reconnect", new ButtonModule("Reconnect","Rejoins the current room",false,false,Method_:()=> RoomManager.EnableMod(RoomManager.Mods.Recconect),Catagory_:"Room") },
+                { "JoinRandom", new ButtonModule("JoinRandom","Rejoins the current room",false,false,Method_:()=> RoomManager.EnableMod(RoomManager.Mods.JoinRandom),Catagory_:"Room") },
+                { "JoinLastLobby", new ButtonModule("JoinLast","Rejoins the last room you were in",false,false,Method_:()=> RoomManager.EnableMod(RoomManager.Mods.JoinLastRoom),Catagory_:"Room") },
+                { "CreatePublicRoom", new ButtonModule("CreatePublic","Creates a public lobby",false,false,Method_:()=> RoomManager.EnableMod(RoomManager.Mods.CreatePublic),Catagory_:"Room") },
+                { "CreateLockedRoom", new ButtonModule("CreateLocked","Creates a locked lobby",false,false,Method_:()=> RoomManager.EnableMod(RoomManager.Mods.CreateLocked),Catagory_:"Room") },
+                { "CreatemoddedRoom", new ButtonModule("CreateModded","Creates a Modded lobby",false,false,Method_:()=> RoomManager.EnableMod(RoomManager.Mods.CreateModded),Catagory_:"Room") },
+                { "ClearRoomCache", new ButtonModule("ClearRoomCache","Clears all event 200 cache",false,false,Method_:()=> RoomManager.EnableMod(RoomManager.Mods.ClearRoomCache),Catagory_:"Room") },
             }
         },
         {
