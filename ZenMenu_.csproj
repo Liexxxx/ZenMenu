@@ -6,6 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="resources\dih" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="resources\dih" />
     <EmbeddedResource Include="Resources\zenmenu">
       <LogicalName>ZenMenu_.Resources.ZenMenu_Prefab</LogicalName>
     </EmbeddedResource>

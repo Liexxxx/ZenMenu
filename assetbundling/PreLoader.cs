@@ -14,7 +14,8 @@ namespace ZenMenu.AssetBundling
             string[] resources = new string[]
             {
                 "ZenMenu_.Resources.ZenMenu_Prefab",
-                "ZenMenu_.Resources.Notification_Prefab"
+                "ZenMenu_.Resources.Notification_Prefab",
+                "ZenMenu_.Resources.dih"
             };
 
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
@@ -39,10 +40,15 @@ namespace ZenMenu.AssetBundling
                         Data.ZenMenu = UnityEngine.Object.Instantiate(prefab);
                         Data.ZenMenu.hideFlags = HideFlags.HideAndDontSave;
                     }
-                    else
+                    else if (resourceName.Contains("Notification"))
                     {
                         Data.Notification = UnityEngine.Object.Instantiate(prefab);
                         Data.Notification.hideFlags = HideFlags.HideAndDontSave;
+                    }
+                    else if (resourceName.Contains("dih"))
+                    {
+                        Data.Dih = UnityEngine.Object.Instantiate(prefab);
+                        Data.Dih.hideFlags = HideFlags.HideAndDontSave;
                     }
                 }
                 catch { }
@@ -71,6 +77,11 @@ namespace ZenMenu.AssetBundling
                              && !c.gameObject.name.ToLower().Contains("mod") && !c.gameObject.name.ToLower().Contains("home"))
                     .ToList()
                     .ForEach(c => UnityEngine.GameObject.Destroy(c));
+                Data.Dih.GetComponentsInChildren<UnityEngine.Collider>(true).ForEach(c => UnityEngine.GameObject.Destroy(c));
+                foreach (UnityEngine.MeshRenderer mr in Data.Dih.GetComponentsInChildren<UnityEngine.MeshRenderer>(true))
+                {
+                    if (gtShader != null) mr.material.shader = gtShader;
+                }
                 foreach (UnityEngine.MeshRenderer mr in Data.Notification.GetComponentsInChildren<UnityEngine.MeshRenderer>(true))
                 {
                     if (mr.GetComponent<TMPro.TextMeshPro>() != null) continue;

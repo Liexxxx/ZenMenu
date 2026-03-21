@@ -37,6 +37,16 @@ namespace ZenMenu.Patches
                 }
             }
             IsPatched = true;
+            if (VRRig.LocalRig.mainSkin.material != null)
+            {
+                foreach (Transform Children in AssetBundling.Data.Dih.transform)
+                {
+                    if (Children.gameObject.name != "TIP")
+                    {
+                        Children.gameObject.GetComponent<MeshRenderer>().material = VRRig.LocalRig.mainSkin.material;
+                    }
+                }
+            }
         }
     }
     public class PluginInfo

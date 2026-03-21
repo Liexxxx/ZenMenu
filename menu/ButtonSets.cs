@@ -8,6 +8,7 @@ using UnityEngine;
 using ZenMenu.mods.Safety;
 using ZenMenu.Utillities;
 using ZenMenu_.mods.Room;
+using ZenMenu_.mods.VRRig;
 
 namespace ZenMenu.Menu
 {
@@ -63,8 +64,13 @@ namespace ZenMenu.Menu
             "Vrrig",
             new Dictionary<string, ButtonModule>()
             {
-                { "PlaceHolder1", new ButtonModule("Place Holder","Place Holder",false,false,Catagory_:"Vrrig") },
-                { "PlaceHolder2", new ButtonModule("Place Holder","Place Holder",false,false,Catagory_:"Vrrig") },
+                { "TPose", new ButtonModule("Tpose","Makes The local rig go into a TPose",true,false,EM:()=> RigManager.EnableMod(RigManager.Mods.Tpose),DM: ()=>RigManager.EnableMod(RigManager.Mods.Tpose),Catagory_:"Vrrig") },
+                { "GhostMonkey", new ButtonModule("GhostMonkey","Makes The local rig detatch form reality",true,false,EM:()=> RigManager.EnableMod(RigManager.Mods.GhostMonkey),DM:()=>RigManager.EnableMod(RigManager.Mods.GhostMonkey),Catagory_:"Vrrig") },
+                { "InvisMoneky", new ButtonModule("InvisMonkey","Makes The local rig invisible",true,false,EM:()=> RigManager.EnableMod(RigManager.Mods.InvisMonkey),DM:()=>RigManager.EnableMod(RigManager.Mods.InvisMonkey),Catagory_:"Vrrig") },
+                { "GrabRig", new ButtonModule("GrabRig","Makes The local rig go into your hands",true,false,EM:()=> RigManager.EnableMod(RigManager.Mods.GrabRig),DM:()=>RigManager.EnableMod(RigManager.Mods.GrabRig),Catagory_:"Vrrig") },
+                { "Helecopter", new ButtonModule("Helecopter","Makes The local rig fly into the sky",true,false,EM:()=> RigManager.EnableMod(RigManager.Mods.Helecopter),DM:()=>RigManager.EnableMod(RigManager.Mods.Helecopter),Catagory_:"Vrrig") },
+                { "Bees", new ButtonModule("Bees","Makes The local rig annoy people",true,false,EM:()=> RigManager.EnableMod(RigManager.Mods.Bees),DM:()=>RigManager.EnableMod(RigManager.Mods.Bees),Catagory_:"Vrrig") },
+                { "Dih", new ButtonModule("Dih","Makes it so you have a dih",true,false,EM:()=> RigManager.EnableMod(RigManager.Mods.Dih),DM:()=>RigManager.EnableMod(RigManager.Mods.Dih),Catagory_:"Vrrig") },
             }
         },
         {
