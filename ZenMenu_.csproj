@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
@@ -7,10 +7,20 @@
 
   <ItemGroup>
     <None Remove="resources\dih" />
+    <None Remove="resources\tih" />
+    <None Remove="resources\zengun" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="resources\dih" />
+    <EmbeddedResource Include="resources\tih">
+      <LogicalName>ZenMenu_.Resources.Tih_Prefab</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="resources\dih">
+      <LogicalName>ZenMenu_.Resources.Dih_Prefab</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="resources\zengun">
+      <LogicalName>ZenMenu_.Resources.Gun_Prefab</LogicalName>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\zenmenu">
       <LogicalName>ZenMenu_.Resources.ZenMenu_Prefab</LogicalName>
     </EmbeddedResource>

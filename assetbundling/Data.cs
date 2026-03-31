@@ -12,5 +12,7 @@ namespace ZenMenu.AssetBundling
         public static GameObject ZenMenu;
         public static GameObject Notification;
         public static GameObject Dih;
+        public static GameObject Tih;
+        public static GameObject Gun;
     }
 }

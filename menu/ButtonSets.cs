@@ -7,8 +7,11 @@ using System.Threading.Tasks;
 using UnityEngine;
 using ZenMenu.mods.Safety;
 using ZenMenu.Utillities;
+using ZenMenu_.mods.Advantage;
+using ZenMenu_.mods.Movement;
 using ZenMenu_.mods.Room;
-using ZenMenu_.mods.VRRig;
+using ZenMenu_.mods.Visual;
+using ZenMenu_.mods.VRRig_;
 
 namespace ZenMenu.Menu
 {
@@ -44,6 +47,7 @@ namespace ZenMenu.Menu
                 { "FlushRPCS", new ButtonModule("FlushRPCS","Flushes The Local RPC Traces",false,false,Method_:()=> SafetyManager.EnableMod(SafetyManager.Mods.FlushRPCS),Catagory_:"Safety") },
                 { "ClearCacheOnGameQuit", new ButtonModule("RemoveQuitTraces","Clears Cache | Traces (RPC) on game quitting",true,false,EM:()=> SafetyManager.EnableMod(SafetyManager.Mods.AntiCrash), DM:()=>SafetyManager.EnableMod(SafetyManager.Mods.AntiCrash),Catagory_:"Safety") },
                 { "RPCProtection", new ButtonModule("RPCProtection","Protection from any rpc lethal to an modder",true,false,EM:()=> SafetyManager.EnableMod(SafetyManager.Mods.RpcProtection), DM:()=>SafetyManager.EnableMod(SafetyManager.Mods.RpcProtection),Catagory_:"Safety") },
+                { "Proxy", new ButtonModule("NetProxy","Protection from any tracers that have to do with ip",true,false,EM:()=> SafetyManager.EnableMod(SafetyManager.Mods.Proxy), DM:()=>SafetyManager.EnableMod(SafetyManager.Mods.Proxy),Catagory_:"Safety") },
             }
         },
         {
@@ -77,24 +81,42 @@ namespace ZenMenu.Menu
             "Movement",
             new Dictionary<string, ButtonModule>()
             {
-                { "PlaceHolder1", new ButtonModule("Place Holder","Place Holder",false,false,Catagory_:"Movement") },
-                { "PlaceHolder2", new ButtonModule("Place Holder","Place Holder",false,false,Catagory_:"Movement") },
+                { "Longarms", new ButtonModule("Longarms","Gives the player extra reach",true,false,EM:()=> MovementManager.EnableMod(MovementManager.Mods.Longarms),DM: ()=>MovementManager.EnableMod(MovementManager.Mods.Longarms),Catagory_:"Movement") },
+                { "Speedboost", new ButtonModule("Speedboost","Gives the player extra speed",true,false,EM:()=> MovementManager.EnableMod(MovementManager.Mods.Speedboost),DM: ()=>MovementManager.EnableMod(MovementManager.Mods.Speedboost),Catagory_:"Movement") },
+                { "Noclip", new ButtonModule("Noclip","Lets the player go thorugh objects",true,false,EM:()=> MovementManager.EnableMod(MovementManager.Mods.Noclip),DM: ()=>MovementManager.EnableMod(MovementManager.Mods.Noclip),Catagory_:"Movement") },
+                { "Platforms", new ButtonModule("Platforms","Lets you jump in the air",true,false,EM:()=> MovementManager.EnableMod(MovementManager.Mods.Platforms),DM: ()=>MovementManager.EnableMod(MovementManager.Mods.Platforms),Catagory_:"Movement") },
+                { "Dash", new ButtonModule("Dash","Lets you get a little boost",true,false,EM:()=> MovementManager.EnableMod(MovementManager.Mods.Dash),DM: ()=>MovementManager.EnableMod(MovementManager.Mods.Dash),Catagory_:"Movement") },
+                { "Pull", new ButtonModule("Pull","Lets you get a little boost",true,false,EM:()=> MovementManager.EnableMod(MovementManager.Mods.Pull),DM: ()=>MovementManager.EnableMod(MovementManager.Mods.Pull),Catagory_:"Movement") },
+                { "Casting", new ButtonModule("Casting","Lets you get a little boost",true,false,EM:()=> MovementManager.EnableMod(MovementManager.Mods.Casting),DM: ()=>MovementManager.EnableMod(MovementManager.Mods.Casting),Catagory_:"Movement") },
+                { "Slidecontrol", new ButtonModule("Slidecontrol","Lets you controll where you go on ice better",true,false,EM:()=> MovementManager.EnableMod(MovementManager.Mods.Slidecontrol),DM: ()=>MovementManager.EnableMod(MovementManager.Mods.Slidecontrol),Catagory_:"Movement") },
+                { "SlipperySurfaces", new ButtonModule("SlipperySurfaces","Makes everything slippery",true,false,EM:()=> MovementManager.EnableMod(MovementManager.Mods.SlipperySurfaces),DM: ()=>MovementManager.EnableMod(MovementManager.Mods.SlipperySurfaces),Catagory_:"Movement") },
+                { "Fly", new ButtonModule("Fly","Gives the abillity to fly",true,false,EM:()=> MovementManager.EnableMod(MovementManager.Mods.Fly),DM: ()=>MovementManager.EnableMod(MovementManager.Mods.Fly),Catagory_:"Movement") },
+                { "Slingshotfly", new ButtonModule("Slingshotfly","Gives the abillity to fly",true,false,EM:()=> MovementManager.EnableMod(MovementManager.Mods.Slingshotfly),DM: ()=>MovementManager.EnableMod(MovementManager.Mods.Slingshotfly),Catagory_:"Movement") },
             }
         },
         {
             "Advantage",
             new Dictionary<string, ButtonModule>()
             {
-                { "PlaceHolder1", new ButtonModule("Place Holder","Place Holder",false,false,Catagory_:"Advantage") },
-                { "PlaceHolder2", new ButtonModule("Place Holder","Place Holder",false,false,Catagory_:"Advantage") },
+                { "Tagall", new ButtonModule("Tagall","Tags everyone",true,false,EM:()=> AdvantageManager.EnableMod(AdvantageManager.Mods.TagAll),DM: ()=>AdvantageManager.EnableMod(AdvantageManager.Mods.TagAll),Catagory_:"Advantage") },
+                { "Taggun", new ButtonModule("Taggun","Tags person of your choice",true,false,EM:()=> AdvantageManager.EnableMod(AdvantageManager.Mods.TagGun),DM: ()=>AdvantageManager.EnableMod(AdvantageManager.Mods.TagGun),Catagory_:"Advantage") },
+                { "Tagarua", new ButtonModule("Tagarua","Tags peeople close to you",true,false,EM:()=> AdvantageManager.EnableMod(AdvantageManager.Mods.TagAura),DM: ()=>AdvantageManager.EnableMod(AdvantageManager.Mods.TagAura),Catagory_:"Advantage") },
+                { "Autojuke", new ButtonModule("Autojuke","Moves out of dangers way",true,false,EM:()=> AdvantageManager.EnableMod(AdvantageManager.Mods.AutoJuke),DM: ()=>AdvantageManager.EnableMod(AdvantageManager.Mods.AutoJuke),Catagory_:"Advantage") },
+                { "Switchprop", new ButtonModule("Switchprop","Changes the porp you currently hidden as",false,false,Method_:()=> AdvantageManager.EnableMod(AdvantageManager.Mods.SwitchProp),Catagory_:"Advantage") },
+                { "Flicktag", new ButtonModule("Flicktag","Tags people from afar",true,false,EM:()=> AdvantageManager.EnableMod(AdvantageManager.Mods.FlickTag),DM: ()=>AdvantageManager.EnableMod(AdvantageManager.Mods.FlickTag),Catagory_:"Advantage") },
+                { "Antitagfreeze", new ButtonModule("Antifreeze","Ensures Tag freeze does not effect gameplay",true,false,EM:()=> AdvantageManager.EnableMod(AdvantageManager.Mods.Antitagfreeze),DM: ()=>AdvantageManager.EnableMod(AdvantageManager.Mods.Antitagfreeze),Catagory_:"Advantage") },
             }
         },
         {
             "Visuals",
             new Dictionary<string, ButtonModule>()
             {
-                { "PlaceHolder1", new ButtonModule("Place Holder","Place Holder",false,false,Catagory_:"Visuals") },
-                { "PlaceHolder2", new ButtonModule("Place Holder","Place Holder",false,false,Catagory_:"Visuals") },
+                { "Chams", new ButtonModule("Chams", "See players through walls", true, false, EM: () => VisualManager.ENableMod(VisualManager.Mods.Chams), DM: () => VisualManager.ENableMod(VisualManager.Mods.Chams), Catagory_: "Visuals") },
+                { "Tracers", new ButtonModule("Tracers", "Draw lines to all players", true, false, EM: () => VisualManager.ENableMod(VisualManager.Mods.Tracers), DM: () => VisualManager.ENableMod(VisualManager.Mods.Tracers), Catagory_: "Visuals") },
+                { "NameEsp", new ButtonModule("NameEsp", "Show player names", true, false, EM: () => VisualManager.ENableMod(VisualManager.Mods.NameEsp), DM: () => VisualManager.ENableMod(VisualManager.Mods.NameEsp), Catagory_: "Visuals") },
+                { "DistanceEsp", new ButtonModule("DistanceEsp", "Show distance to players", true, false, EM: () => VisualManager.ENableMod(VisualManager.Mods.DistanceEsp), DM: () => VisualManager.ENableMod(VisualManager.Mods.DistanceEsp), Catagory_: "Visuals") },
+                { "BoxEsp", new ButtonModule("BoxEsp", "Draw boxes around players", true, false, EM: () => VisualManager.ENableMod(VisualManager.Mods.BoxEsp), DM: () => VisualManager.ENableMod(VisualManager.Mods.BoxEsp), Catagory_: "Visuals") },
+                { "TrailEsp", new ButtonModule("TrailEsp", "Show player movement trails", true, false, EM: () => VisualManager.ENableMod(VisualManager.Mods.TrailEsp), DM: () => VisualManager.ENableMod(VisualManager.Mods.TrailEsp), Catagory_: "Visuals") },
             }
         },
         };

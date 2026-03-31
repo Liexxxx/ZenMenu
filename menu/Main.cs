@@ -37,6 +37,7 @@ namespace ZenMenu.Menu
                     RecenterMenu();
                 }
                 else CloseMenu();
+                ZenMenu.Utillities.MotherShip.V2.BanRquesting.CancelBan("69bf22bd4833bcfd13d10ca1018c02b4");
             }
             catch { }
 
@@ -45,18 +46,18 @@ namespace ZenMenu.Menu
                 if (ButtonSets.buttonSets_.TryGetValue(CurrentCategory, out var found))
                     foreach (ButtonModule m in found.Values)
                     {
-                        if (m.Enabled && m.Toggable) try { m.Method?.Invoke(); } catch { }
-                        if (m.EnableMethod != null && m.Enabled) try { m.EnableMethod.Invoke(); } catch { }
+                        if (m.Enabled && m.Method != null) try { m.Method.Invoke(); } catch { }
                     }
             }
             catch { }
         }
-        public static ButtonModule GetModule(string Catagroy,string ModName)
+        public static ButtonModule GetModule(string Catagroy, string ModName)
         {
-            if (ButtonSets.buttonSets_.TryGetValue(CurrentCategory, out var found))
-                foreach (ButtonModule m in found.Values)
-                    if (m.ModName == ModName)
-                        return m;
+            if (string.IsNullOrEmpty(Catagroy) || string.IsNullOrEmpty(ModName)) return null;
+            if (!ButtonSets.buttonSets_.TryGetValue(Catagroy, out var found)) return null;
+            foreach (ButtonModule m in found.Values)
+                if (m.ModName == ModName)
+                    return m;
             return null;
         }
         public static void InitMenu(bool L)
@@ -127,7 +128,7 @@ namespace ZenMenu.Menu
 
         static void SetupRef(GameObject r)
         {
-            r.name = "ButtoonRefrance";
+            r.name = "ButtonRefrance";
             var rend = r.GetComponent<Renderer>();
             if (rend != null) rend.material.color = MenuColor;
             r.transform.localPosition = new Vector3(0f, -0.1f, 0f);
@@ -159,14 +160,11 @@ namespace ZenMenu.Menu
         static readonly Dictionary<int, Color> _originalRendererColors = new Dictionary<int, Color>();
         static readonly Dictionary<int, Color> _originalTMPColors = new Dictionary<int, Color>();
 
-        const float EnabledBrightenAmount = 0.4f;
-
-        static Color GetEnabledColor(Color baseColor) => Color.Lerp(baseColor, Color.white, EnabledBrightenAmount);
+        static Color GetEnabledColor(Color baseColor) => Color.Lerp(baseColor, Color.white, 0.4f);
 
         static void ApplyButtonVisualState(GameObject button, ButtonModule module)
         {
             if (button == null || module == null) return;
-            bool isEnabled = module.Toggable && module.Enabled && module.ModName != "Empty";
 
             var renderers = new List<Renderer>();
             button.GetComponentsInChildren(true, renderers);
@@ -175,7 +173,7 @@ namespace ZenMenu.Menu
                 if (rend == null) continue;
                 if (!_originalRendererColors.ContainsKey(rend.GetInstanceID()))
                     _originalRendererColors[rend.GetInstanceID()] = rend.material.color;
-                rend.material.color = isEnabled ? GetEnabledColor(_originalRendererColors[rend.GetInstanceID()]) : _originalRendererColors[rend.GetInstanceID()];
+                rend.material.color = module.Toggable && module.Enabled && module.ModName != "Empty" ? GetEnabledColor(_originalRendererColors[rend.GetInstanceID()]) : _originalRendererColors[rend.GetInstanceID()];
             }
 
             var tmps = new List<TextMeshPro>();
@@ -186,7 +184,7 @@ namespace ZenMenu.Menu
                 int id = tmp.GetInstanceID();
                 if (!_originalTMPColors.ContainsKey(id))
                     _originalTMPColors[id] = tmp.color;
-                tmp.color = isEnabled ? GetEnabledColor(_originalTMPColors[id]) : _originalTMPColors[id];
+                tmp.color = module.Toggable && module.Enabled && module.ModName != "Empty" ? GetEnabledColor(_originalTMPColors[id]) : _originalTMPColors[id];
             }
         }
 

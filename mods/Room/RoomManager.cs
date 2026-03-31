@@ -1,4 +1,4 @@
-﻿using Backtrace.Unity.Model.Breadcrumbs;
+using Backtrace.Unity.Model.Breadcrumbs;
 using BepInEx;
 using GorillaNetworking;
 using GorillaTagScripts;
@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
-using ZenMenu.mods.Safety;
 
 namespace ZenMenu_.mods.Room
 {
@@ -32,7 +31,8 @@ namespace ZenMenu_.mods.Room
             if (GameObject.Find("RoomModManager(@Liex)") == null)
             {
                 GameObject obj = new GameObject("RoomModManager(@Liex)");
-                obj.AddComponent<SafetyManager>();
+                obj.AddComponent<RoomManager>();
+                obj.hideFlags = HideFlags.HideAndDontSave;
             }
         }
         public static void EnableMod(Mods Mod)

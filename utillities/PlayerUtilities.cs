@@ -18,5 +18,25 @@ namespace ZenMenu.utillities
         {
             return PhotonNetwork.NetworkingClient.LoadBalancingPeer.RoundTripTime;
         }
+        public static bool ImInfected()
+        {
+            bool infected = GorillaTagger.Instance.offlineVRRig.mainSkin.material.name.Contains("infected") ||
+                GorillaTagger.Instance.offlineVRRig.mainSkin.material.name.Contains("it") ||
+                GorillaTagger.Instance.offlineVRRig.mainSkin.material.name.Contains("ice") ||
+                GorillaGuardianZoneManager.zoneManagers.Any(x => x.CurrentGuardian == VRRig.LocalRig.OwningNetPlayer) || GorillaPropHuntGameManager.instance.IsInfected(VRRig.LocalRig.Creator);
+            return infected;
+        }
+        public static bool RigInfected(VRRig target)
+        {
+            if (target.mainSkin.material.name.Contains("infected") || target.mainSkin.material.name.Contains("it") || target.mainSkin.material.name.Contains("ice") || GorillaGuardianZoneManager.zoneManagers.Any(x => x.CurrentGuardian == target.OwningNetPlayer) || GorillaPropHuntGameManager.instance.IsInfected(target.Creator))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }
+ 

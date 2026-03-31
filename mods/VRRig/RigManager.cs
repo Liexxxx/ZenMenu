@@ -1,15 +1,19 @@
-﻿using Backtrace.Unity.Model.Breadcrumbs;
+using Backtrace.Unity.Model.Breadcrumbs;
 using BepInEx;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using UnityEngine;
 using ZenMenu.Menu;
+using ZenMenu.mods.Safety;
+using ZenMenu_.mods.Safety;
+using ZenMenu_.utillities.GunLib;
 
-namespace ZenMenu_.mods.VRRig
+namespace ZenMenu_.mods.VRRig_
 {
-    [BepInPlugin("org.zen.vrrig","VrrigManager","0.0.0")]
+    [BepInPlugin("org.zen.vrrig", "VrrigManager", "0.0.0")]
     internal class RigManager : BaseUnityPlugin
     {
         public enum Mods
@@ -21,7 +25,8 @@ namespace ZenMenu_.mods.VRRig
             GrabRig,
             Helecopter,
             Bees,
-            Dih
+            Dih,
+            Tih
         }
         public static void EnableMod(Mods Mod)
         {
@@ -51,108 +56,156 @@ namespace ZenMenu_.mods.VRRig
                 case Mods.Dih:
                     Dih = !Dih;
                     break;
+                case Mods.Tih:
+                    Tih = !Tih;
+                    break;
             }
         }
-
-        static GameObject gameobject;
         void Awake()
         {
-            if (gameobject == null)
+            InitManager();
+        }
+        public static void InitManager()
+        {
+            if (GameObject.Find("VRRigModManager(@Liex)") == null)
             {
-                gameobject = new GameObject("VrrigModManager(@Liex)");
-                gameobject.AddComponent<RigManager>();
+                GameObject obj = new GameObject("VRRigModManager(@Liex)");
+                obj.AddComponent<VRRig_.RigManager>();
+                obj.hideFlags = HideFlags.HideAndDontSave;
             }
         }
-        public static bool Tpose,
-            Griddy,
-            GhostMonkey,
-            InvisMonkey,
-            GrabRig,
-            Helecopter,
-            Bees,
-            Dih;
-        bool ToggledGhostorInvis;
+
+        public static bool Tpose, Griddy, GhostMonkey, InvisMonkey, GrabRig, Helecopter, Bees, Dih,Tih;
+        bool ToggledGhost, ToggledInvis;
+
         void Update()
         {
+
             if (Tpose)
             {
-                GorillaTagger.Instance.offlineVRRig.rightHandTransform.position = GorillaTagger.Instance.offlineVRRig.bodyTransform.right * 10;
-                GorillaTagger.Instance.offlineVRRig.leftHandTransform.position = GorillaTagger.Instance.offlineVRRig.bodyTransform.right * -10;
+                if (GorillaTagger.Instance.offlineVRRig.rightHandTransform != null)
+                    GorillaTagger.Instance.rightHandTransform.position = GorillaTagger.Instance.bodyCollider.transform.right * 10;
+                if (GorillaTagger.Instance.offlineVRRig.leftHandTransform != null)
+                    GorillaTagger.Instance.leftHandTransform.position = GorillaTagger.Instance.bodyCollider.transform.right * -10;
             }
-            if (Griddy)// make anim later
-            {
 
-            }
             if (GhostMonkey)
             {
-                if (ControllerInputPoller.instance.rightControllerPrimaryButton || ControllerInputPoller.instance.leftControllerPrimaryButton)
-                    ToggledGhostorInvis = true;
-                if (ControllerInputPoller.instance.rightControllerSecondaryButton || ControllerInputPoller.instance.leftControllerSecondaryButton)
-                    ToggledGhostorInvis = false;
-                if (ToggledGhostorInvis)
-                    GorillaTagger.Instance.offlineVRRig.enabled = false;
-                else
-                    GorillaTagger.Instance.offlineVRRig.enabled = true;
+                if (ControllerInputPoller.instance.rightControllerPrimaryButton || ControllerInputPoller.instance.leftControllerPrimaryButton) ToggledGhost = true;
+                if (ControllerInputPoller.instance.rightControllerSecondaryButton || ControllerInputPoller.instance.leftControllerSecondaryButton) ToggledGhost = false;
+                GorillaTagger.Instance.offlineVRRig.enabled = !ToggledGhost;
             }
+            else
+            {
+                ToggledGhost = false;
+                if (!InvisMonkey && !GrabRig) GorillaTagger.Instance.offlineVRRig.enabled = true;
+            }
+
             if (InvisMonkey)
             {
-                if (ControllerInputPoller.instance.rightControllerPrimaryButton || ControllerInputPoller.instance.leftControllerPrimaryButton)
-                    ToggledGhostorInvis = true;
-                if (ControllerInputPoller.instance.rightControllerSecondaryButton || ControllerInputPoller.instance.leftControllerSecondaryButton)
-                    ToggledGhostorInvis = false;
-                if (ToggledGhostorInvis)
+                if (ControllerInputPoller.instance.rightControllerPrimaryButton || ControllerInputPoller.instance.leftControllerPrimaryButton) ToggledInvis = true;
+                if (ControllerInputPoller.instance.rightControllerSecondaryButton || ControllerInputPoller.instance.leftControllerSecondaryButton) ToggledInvis = false;
+                if (ToggledInvis)
                 {
                     GorillaTagger.Instance.offlineVRRig.enabled = false;
                     GorillaTagger.Instance.offlineVRRig.transform.position = Vector3.zero;
                 }
-                else
-                    GorillaTagger.Instance.offlineVRRig.enabled = true;
+                else GorillaTagger.Instance.offlineVRRig.enabled = true;
             }
+            else
+            {
+                ToggledInvis = false;
+                if (!GhostMonkey && !GrabRig) GorillaTagger.Instance.offlineVRRig.enabled = true;
+            }
+
             if (GrabRig)
             {
                 if (ControllerInputPoller.instance.rightControllerGripFloat > 0.5f || ControllerInputPoller.instance.leftControllerGripFloat > 0.5f)
                 {
                     GorillaTagger.Instance.offlineVRRig.enabled = false;
-                    GorillaTagger.Instance.offlineVRRig.transform.position = ControllerInputPoller.instance.rightControllerGripFloat > 0.5f? GorillaTagger.Instance.rightHandTransform.position : GorillaTagger.Instance.leftHandTransform.position;
-                    GorillaTagger.Instance.offlineVRRig.headConstraint.gameObject.SetActive(false);
+                    if (GorillaTagger.Instance.offlineVRRig.headConstraint != null) GorillaTagger.Instance.offlineVRRig.headConstraint.gameObject.SetActive(false);
+                    if (ControllerInputPoller.instance.rightControllerGripFloat > 0.5f && GorillaTagger.Instance.rightHandTransform != null)
+                        GorillaTagger.Instance.offlineVRRig.transform.position = GorillaTagger.Instance.rightHandTransform.position;
+                    else if (GorillaTagger.Instance.leftHandTransform != null)
+                        GorillaTagger.Instance.offlineVRRig.transform.position = GorillaTagger.Instance.leftHandTransform.position;
                 }
-                else if (ControllerInputPoller.instance.rightControllerGripFloat < 0.5f || ControllerInputPoller.instance.leftControllerGripFloat < 0.5f)
+                else
                 {
-                    GorillaTagger.Instance.offlineVRRig.headConstraint.gameObject.SetActive(false);
+                    GorillaTagger.Instance.offlineVRRig.enabled = true;
+                    if (GorillaTagger.Instance.offlineVRRig.headConstraint != null) GorillaTagger.Instance.offlineVRRig.headConstraint.gameObject.SetActive(true);
                 }
             }
+            else
+            {
+                if (!GhostMonkey && !InvisMonkey)
+                {
+                    GorillaTagger.Instance.offlineVRRig.enabled = true;
+                    if (GorillaTagger.Instance.offlineVRRig.headConstraint != null) GorillaTagger.Instance.offlineVRRig.headConstraint.gameObject.SetActive(true);
+                }
+            }
+
             if (Helecopter)
             {
                 Tpose = true;
                 GorillaTagger.Instance.offlineVRRig.enabled = false;
-                GorillaTagger.Instance.offlineVRRig.transform.position = Vector3.up * Time.deltaTime * 6f;
-                GorillaTagger.Instance.offlineVRRig.transform.rotation = Quaternion.RotateTowards(Quaternion.identity, Quaternion.identity, 360);
+                GorillaTagger.Instance.offlineVRRig.transform.position += Vector3.up * Time.deltaTime * 6f;
+                GorillaTagger.Instance.offlineVRRig.transform.Rotate(0, 360 * Time.deltaTime, 0);
             }
-            else if (!Main.GetModule("Vrrig","Tpose").Enabled)
-                Tpose = false;
+            else if (!Helecopter && !Bees)
+            {
+                if (Main.GetModule("Vrrig", "Tpose") != null && !Main.GetModule("Vrrig", "Tpose").Enabled) Tpose = false;
+            }
+
             if (Bees)
             {
                 Tpose = true;
-                var rigs = ZenMenu.patches.VrrigCache.Data.vrrigs.Where(x => !x.isLocal).Select(x => x.transform).ToList();
-                if (rigs.Count > 0)
+                if (ZenMenu.patches.VrrigCache.Data.vrrigs.Where(x => x != null && !x.isLocal).Select(x => x.transform).ToList() is System.Collections.Generic.List<Transform> rigs && rigs.Count > 0)
                 {
                     GorillaTagger.Instance.offlineVRRig.enabled = false;
-
-                    int randomIndex = UnityEngine.Random.Range(0, rigs.Count);
-                    GorillaTagger.Instance.offlineVRRig.transform.position = rigs[randomIndex].position;
+                    GorillaTagger.Instance.offlineVRRig.transform.position = rigs[UnityEngine.Random.Range(0, rigs.Count)].position;
                 }
             }
-            else if (!Main.GetModule("Vrrig", "Tpose").Enabled)
-                Tpose = false;
+
             if (Dih)
             {
-                ZenMenu.AssetBundling.Data.Dih.transform.parent = GorillaTagger.Instance.offlineVRRig.bodyTransform;
-                ZenMenu.AssetBundling.Data.Dih.transform.rotation = Quaternion.identity;
-                ZenMenu.AssetBundling.Data.Dih.transform.position = GorillaTagger.Instance.offlineVRRig.bodyTransform.position - new Vector3(0, 0.1f, 0);
-                ZenMenu.AssetBundling.Data.Dih.transform.forward = GorillaTagger.Instance.offlineVRRig.bodyTransform.forward;
+                if (ZenMenu.AssetBundling.Data.Dih != null && GorillaTagger.Instance.offlineVRRig.bodyTransform != null)
+                {
+                    ZenMenu.AssetBundling.Data.Dih.transform.position = GorillaTagger.Instance.offlineVRRig.bodyTransform.position - new Vector3(0, 0.1f, 0) + GorillaTagger.Instance.offlineVRRig.bodyTransform.forward * 0.15f;
+                    ZenMenu.AssetBundling.Data.Dih.transform.rotation = Quaternion.identity;
+                    ZenMenu.AssetBundling.Data.Dih.transform.forward = GorillaTagger.Instance.offlineVRRig.bodyTransform.forward;
+                    if (GorillaTagger.Instance.offlineVRRig.mainSkin != null && GorillaTagger.Instance.offlineVRRig.mainSkin.material != null)
+                    {
+                        foreach (Transform child in ZenMenu.AssetBundling.Data.Dih.transform)
+                        {
+                            if (child == null) continue;
+                            if (child.gameObject.name != "TIP" && child.gameObject.GetComponent<MeshRenderer>() != null)
+                                child.gameObject.GetComponent<MeshRenderer>().material = GorillaTagger.Instance.offlineVRRig.mainSkin.material;
+                        }
+                    }
+                }
             }
-            else
+            else if (ZenMenu.AssetBundling.Data.Dih != null)
                 ZenMenu.AssetBundling.Data.Dih.transform.position = new Vector3(99999, 99999, 99999);
+            if (Tih)
+            {
+                if (ZenMenu.AssetBundling.Data.Tih != null && GorillaTagger.Instance.offlineVRRig.bodyTransform != null)
+                {
+                    ZenMenu.AssetBundling.Data.Tih.transform.position = GorillaTagger.Instance.offlineVRRig.bodyTransform.position + new Vector3(0, 0.15f, 0) + GorillaTagger.Instance.offlineVRRig.bodyTransform.forward * 0.15f;
+                    ZenMenu.AssetBundling.Data.Tih.transform.rotation = Quaternion.identity;
+                    ZenMenu.AssetBundling.Data.Tih.transform.forward = GorillaTagger.Instance.offlineVRRig.bodyTransform.forward;
+                    if (GorillaTagger.Instance.offlineVRRig.mainSkin != null && GorillaTagger.Instance.offlineVRRig.mainSkin.material != null)
+                    {
+                        foreach (Transform child in ZenMenu.AssetBundling.Data.Tih.transform)
+                        {
+                            if (child == null) continue;
+                            if (!child.gameObject.name.Contains("UV") && child.gameObject.GetComponent<MeshRenderer>() != null)
+                                child.gameObject.GetComponent<MeshRenderer>().material = GorillaTagger.Instance.offlineVRRig.mainSkin.material;
+                        }
+                    }
+                }
+            }
+            else if (ZenMenu.AssetBundling.Data.Tih != null)
+                ZenMenu.AssetBundling.Data.Tih.transform.position = new Vector3(99999, 99999, 99999);
         }
     }
 }

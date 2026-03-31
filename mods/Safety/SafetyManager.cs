@@ -14,6 +14,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 using ZenMenu.Menu;
@@ -43,7 +45,8 @@ namespace ZenMenu.mods.Safety
             FlushCache,
             FlushRPCS,
             CleanTracesOnGameClose,
-            RpcProtection
+            RpcProtection,
+            Proxy
         }
         public static void EnableMod(Mods mod)
         {
@@ -62,7 +65,7 @@ namespace ZenMenu.mods.Safety
                     AntiModerator = !AntiModerator;
                     break;
                 case Mods.PhotonSpoof:
-                    if (!PhotonNetwork.IsConnected) return;
+                    if (!PhotonNetwork.IsConnected) break;
                     PhotonNetwork.OpRemoveCompleteCacheOfPlayer(PhotonNetwork.LocalPlayer.ActorNumber);
                     PhotonNetwork.LocalPlayer.CustomProperties.Clear();
                     PhotonNetwork.LoadOrCreateSettings(true);
@@ -144,6 +147,16 @@ namespace ZenMenu.mods.Safety
                 case Mods.RpcProtection:
                     RpcProtection = !RpcProtection;
                     break;
+                case Mods.Proxy:
+                    Proxy = !Proxy;
+                    if (Proxy)
+                    {
+                        ZenProxy.SetLogTarget(GameObject.Find("Environment Objects/LocalObjects_Prefab/TreeRoom/COCBodyText_TitleData").GetComponent<TextMeshPro>());
+                        _ = Task.Run(() => ZenProxy.InitProxy(8080));
+                    }
+                    else
+                        ZenProxy.StopProxy();
+                    break;
             }
         }
         public static void InitManager()
@@ -152,6 +165,7 @@ namespace ZenMenu.mods.Safety
             {
                 GameObject obj = new GameObject("SafetyModManager(@Liex)");
                 obj.AddComponent<SafetyManager>();
+                obj.hideFlags = HideFlags.HideAndDontSave;
             }
         }
         public static GameObject zone;
@@ -164,6 +178,7 @@ namespace ZenMenu.mods.Safety
         static bool AntiModerator;
         static bool CleanTraces;
         static bool RpcProtection;
+        static bool Proxy;
         float col = 0f;
         bool NeededManualRPCProt;
         void Update()

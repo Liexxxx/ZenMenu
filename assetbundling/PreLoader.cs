@@ -15,7 +15,9 @@ namespace ZenMenu.AssetBundling
             {
                 "ZenMenu_.Resources.ZenMenu_Prefab",
                 "ZenMenu_.Resources.Notification_Prefab",
-                "ZenMenu_.Resources.dih"
+                "ZenMenu_.Resources.Dih_Prefab",
+                "ZenMenu_.Resources.Tih_Prefab",
+                "ZenMenu_.Resources.Gun_Prefab",
             };
 
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
@@ -45,10 +47,20 @@ namespace ZenMenu.AssetBundling
                         Data.Notification = UnityEngine.Object.Instantiate(prefab);
                         Data.Notification.hideFlags = HideFlags.HideAndDontSave;
                     }
-                    else if (resourceName.Contains("dih"))
+                    else if (resourceName.Contains("Dih_Prefab"))
                     {
                         Data.Dih = UnityEngine.Object.Instantiate(prefab);
                         Data.Dih.hideFlags = HideFlags.HideAndDontSave;
+                    }
+                    else if (resourceName.Contains("Tih_Prefab"))
+                    {
+                        Data.Tih = UnityEngine.Object.Instantiate(prefab);
+                        Data.Tih.hideFlags = HideFlags.HideAndDontSave;
+                    }
+                    else if (resourceName.Contains("Gun_Prefab"))
+                    {
+                        Data.Gun = UnityEngine.Object.Instantiate(prefab);
+                        Data.Gun.hideFlags = HideFlags.HideAndDontSave;
                     }
                 }
                 catch { }
@@ -77,10 +89,29 @@ namespace ZenMenu.AssetBundling
                              && !c.gameObject.name.ToLower().Contains("mod") && !c.gameObject.name.ToLower().Contains("home"))
                     .ToList()
                     .ForEach(c => UnityEngine.GameObject.Destroy(c));
-                Data.Dih.GetComponentsInChildren<UnityEngine.Collider>(true).ForEach(c => UnityEngine.GameObject.Destroy(c));
-                foreach (UnityEngine.MeshRenderer mr in Data.Dih.GetComponentsInChildren<UnityEngine.MeshRenderer>(true))
+                if (Data.Dih != null)
                 {
-                    if (gtShader != null) mr.material.shader = gtShader;
+                    Data.Dih.GetComponentsInChildren<UnityEngine.Collider>(true).ForEach(c => UnityEngine.GameObject.Destroy(c));
+                    foreach (UnityEngine.MeshRenderer mr in Data.Dih.GetComponentsInChildren<UnityEngine.MeshRenderer>(true))
+                    {
+                        if (gtShader != null) mr.material.shader = gtShader;
+                    }
+                }
+                if (Data.Gun != null)
+                {
+                    Data.Gun.GetComponentsInChildren<UnityEngine.Collider>(true).ForEach(c => UnityEngine.GameObject.Destroy(c));
+                    foreach (UnityEngine.MeshRenderer mr in Data.Gun.GetComponentsInChildren<UnityEngine.MeshRenderer>(true))
+                    {
+                        if (gtShader != null) mr.material.shader = gtShader;
+                    }
+                }
+                if (Data.Tih != null)
+                {
+                    Data.Tih.GetComponentsInChildren<UnityEngine.Collider>(true).ForEach(c => UnityEngine.GameObject.Destroy(c));
+                    foreach (UnityEngine.MeshRenderer mr in Data.Tih.GetComponentsInChildren<UnityEngine.MeshRenderer>(true))
+                    {
+                        if (gtShader != null) mr.material.shader = gtShader;
+                    }
                 }
                 foreach (UnityEngine.MeshRenderer mr in Data.Notification.GetComponentsInChildren<UnityEngine.MeshRenderer>(true))
                 {
